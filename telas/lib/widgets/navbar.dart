@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 
 class Navbar extends StatelessWidget {
-  final bool mostrarIcones;
+  final bool mostrarImagem;           // Mostra logo?
+  final bool mostrarIconeVoltar;      // Mostra seta?
+  final bool mostrarIconeMais;        // Mostra três pontinhos?
+  final String? titulo;               // Texto se imagem não for mostrada
 
-  const Navbar({super.key, this.mostrarIcones = true});
+  const Navbar({
+    super.key,
+    this.mostrarImagem = false,
+    this.mostrarIconeVoltar = false,
+    this.mostrarIconeMais = false,
+    this.titulo,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,29 +28,40 @@ class Navbar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // --- Lado Esquerdo: Voltar + Imagem ou Texto ---
           Row(
             children: [
-              if (mostrarIcones)
+              if (mostrarIconeVoltar)
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
                     Navigator.pop(context);
                   },
                 ),
-              Image.asset(
-                'assets/images/LogoMinhaSaude.png',
-                width: size.width * 0.25, // largura proporcional
-                height: size.height * 0.05, // altura proporcional
-                fit: BoxFit.contain,
-              ),
+              mostrarImagem
+                  ? Image.asset(
+                      'assets/images/LogoMinhaSaude.png',
+                      width: size.width * 0.25,
+                      height: size.height * 0.05,
+                      fit: BoxFit.contain,
+                    )
+                  : Text(
+                      titulo ?? '',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF171C1E),
+                      ),
+                    ),
             ],
           ),
 
-          if (mostrarIcones)
+          // --- Lado Direito: Ícone de opções ---
+          if (mostrarIconeMais)
             IconButton(
               icon: const Icon(Icons.more_vert),
               onPressed: () {
-                // ação dos 3 pontinhos aqui
+                // ação dos três pontinhos
               },
             ),
         ],
