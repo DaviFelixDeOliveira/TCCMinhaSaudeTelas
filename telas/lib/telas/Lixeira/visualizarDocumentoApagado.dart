@@ -27,7 +27,145 @@ class VisualizarDocumentoApagado extends StatefulWidget {
 
 class _VisualizarDocumentoApagadoState
     extends State<VisualizarDocumentoApagado> {
-  int abaAtiva = 2; // exemplo: Lixeira
+  int abaAtiva = 2;
+
+  void _mostrarDialogoExcluir() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (BuildContext context) {
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
+            child: Container(
+              width: 312,
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                color: const Color(0xFFE4E9EB),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 24, left: 24, right: 24),
+                   child: Column(
+                          children: const [
+                            Icon(
+                              Icons.delete_outline,
+                              size: 24,
+                              color: Color(0xFFBA1A1A),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Excluir Documento',
+
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF171C1E),
+                            fontSize: 24,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            height: 1.33,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Ao excluir este item, ele será removido permanentemente e não poderá ser recuperado. Deseja continuar?',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF3F484B),
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            height: 1.43,
+                            letterSpacing: 0.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 20, left: 8, right: 24, bottom: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // Botão Cancelar
+                        Container(
+                          decoration: ShapeDecoration(
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(
+                                width: 1,
+                                color: Color(0xFFBFC8CB),
+                              ),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              child: Text(
+                                'Cancelar',
+                                style: TextStyle(
+                                  color: Color(0xFF3F484B),
+                                  fontSize: 14,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Botão Excluir
+                        Container(
+                          decoration: ShapeDecoration(
+                            color: const Color(0xFFBA1A1A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              // Aqui você pode adicionar lógica de exclusão permanente
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              child: Text(
+                                'Excluir',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.10,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +188,20 @@ class _VisualizarDocumentoApagadoState
                       titulo: widget.tituloDocumento,
                     ),
                     const SizedBox(height: 16),
-
                     _buildCard(context, 'Nome do(a) Paciente', widget.paciente),
                     const SizedBox(height: 16),
                     _buildCard(context, 'Nome do(a) Médico(a)', widget.medico),
                     const SizedBox(height: 16),
-                    _buildCard(context, 'Tipo de Documento', widget.tipoDocumento),
+                    _buildCard(
+                        context, 'Tipo de Documento', widget.tipoDocumento),
                     const SizedBox(height: 16),
-                    _buildCard(context, 'Data do Documento', widget.dataDocumento),
+                    _buildCard(
+                        context, 'Data do Documento', widget.dataDocumento),
                     const SizedBox(height: 16),
                     _buildCard(context, 'Excluído em', widget.dataExclusao),
                     const SizedBox(height: 24),
 
-                    // --- Ações ---
+                    // Ações
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
@@ -92,7 +231,7 @@ class _VisualizarDocumentoApagadoState
                             cor: const Color(0xFFBA1A1A),
                             texto: 'Excluir Permanentemente',
                             icone: Icons.delete_outline,
-                            onPressed: () {},
+                            onPressed: _mostrarDialogoExcluir,
                           ),
                         ],
                       ),

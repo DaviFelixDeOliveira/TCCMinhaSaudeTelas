@@ -8,6 +8,7 @@ class DocumentoItem extends StatelessWidget {
   final String titulo;
   final String iconePath;
   final String data;
+  final String diasRestantes;
   final VoidCallback onTap;
 
   const DocumentoItem({
@@ -15,6 +16,7 @@ class DocumentoItem extends StatelessWidget {
     required this.titulo,
     required this.iconePath,
     required this.data,
+    required this.diasRestantes,
     required this.onTap,
   });
 
@@ -56,9 +58,10 @@ class DocumentoItem extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              data,
+              "$diasRestantes dias",
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.grey,
+                color: Colors.redAccent,
                 fontSize: 10,
                 fontFamily: 'Roboto',
               ),
@@ -117,6 +120,7 @@ class TelaDocumentos extends StatelessWidget {
                   return DocumentoItem(
                     titulo: doc['titulo']!,
                     data: doc['data']!,
+                    diasRestantes: doc['diasRestantes']!,
                     iconePath: 'assets/images/DocumentIcon.png',
                     onTap: () {
                       Navigator.push(
@@ -128,7 +132,7 @@ class TelaDocumentos extends StatelessWidget {
                             medico: 'Dra. Carolina Mendes',
                             tipoDocumento: 'Tomografia',
                             dataDocumento: doc['data']!,
-                            dataExclusao: '02/09/2025',
+                            dataExclusao: '02/09/2025', // Futuramente podemos substituir por cálculo baseado em diasRestantes
                           ),
                         ),
                       );
@@ -173,18 +177,22 @@ class MyApp extends StatelessWidget {
           {
             'titulo': 'Tomografia da Jaqueline Souza',
             'data': '15/01/2023',
+            'diasRestantes': '30',
           },
           {
             'titulo': 'Hemograma do Marcos Lima',
             'data': '02/2020',
+            'diasRestantes': '15',
           },
           {
             'titulo': 'Hemograma da Ana Beatriz Rocha',
             'data': '03/2020',
+            'diasRestantes': '25',
           },
           {
             'titulo': 'Tomografia do Haldol Daniel',
             'data': '12/2021',
+            'diasRestantes': '5',
           },
         ],
       ),
