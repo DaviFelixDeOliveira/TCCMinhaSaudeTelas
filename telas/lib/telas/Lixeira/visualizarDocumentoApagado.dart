@@ -34,7 +34,7 @@ class _VisualizarDocumentoApagadoState
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.5),
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
@@ -52,19 +52,21 @@ class _VisualizarDocumentoApagadoState
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.only(top: 24, left: 24, right: 24),
-                   child: Column(
-                          children: const [
-                            Icon(
-                              Icons.delete_outline,
-                              size: 24,
-                              color: Color(0xFFBA1A1A),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Excluir Documento',
-
+                    padding: const EdgeInsets.only(
+                      top: 24,
+                      left: 24,
+                      right: 24,
+                    ),
+                    child: Column(
+                      children: const [
+                        Icon(
+                          Icons.delete_outline,
+                          size: 24,
+                          color: Color(0xFFBA1A1A),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Excluir Documento',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Color(0xFF171C1E),
@@ -92,11 +94,15 @@ class _VisualizarDocumentoApagadoState
                   ),
                   Padding(
                     padding: const EdgeInsets.only(
-                        top: 20, left: 8, right: 24, bottom: 20),
+                      top: 20,
+                      left: 8,
+                      right: 24,
+                      bottom: 20,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Botão Cancelar
+                        // Cancelar
                         Container(
                           decoration: ShapeDecoration(
                             shape: RoundedRectangleBorder(
@@ -108,10 +114,12 @@ class _VisualizarDocumentoApagadoState
                             ),
                           ),
                           child: TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
                             child: const Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               child: Text(
                                 'Cancelar',
                                 style: TextStyle(
@@ -126,7 +134,7 @@ class _VisualizarDocumentoApagadoState
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // Botão Excluir
+                        // Excluir
                         Container(
                           decoration: ShapeDecoration(
                             color: const Color(0xFFBA1A1A),
@@ -136,12 +144,19 @@ class _VisualizarDocumentoApagadoState
                           ),
                           child: TextButton(
                             onPressed: () {
-                              Navigator.of(context).pop();
-                              // Aqui você pode adicionar lógica de exclusão permanente
+                              Navigator.of(
+                                dialogContext,
+                              ).pop(); // Fecha o diálogo
+                              Navigator.of(
+                                context,
+                              ).pop(); // Volta para tela anterior
+                              _mostrarSnackbar(); // Mostra a snackbar
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               child: Text(
                                 'Excluir',
                                 style: TextStyle(
@@ -164,6 +179,44 @@ class _VisualizarDocumentoApagadoState
           ),
         );
       },
+    );
+  }
+
+  void _mostrarSnackbar() {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.clearSnackBars();
+
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF2B3133),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        content: Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Documento apagado com sucesso.',
+                style: TextStyle(
+                  color: Color(0xFFECF2F4),
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  height: 1.43,
+                  letterSpacing: 0.25,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                scaffoldMessenger.hideCurrentSnackBar();
+              },
+              icon: const Icon(Icons.close, size: 24, color: Color(0xFFECF2F4)),
+              tooltip: 'Fechar',
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -193,15 +246,20 @@ class _VisualizarDocumentoApagadoState
                     _buildCard(context, 'Nome do(a) Médico(a)', widget.medico),
                     const SizedBox(height: 16),
                     _buildCard(
-                        context, 'Tipo de Documento', widget.tipoDocumento),
+                      context,
+                      'Tipo de Documento',
+                      widget.tipoDocumento,
+                    ),
                     const SizedBox(height: 16),
                     _buildCard(
-                        context, 'Data do Documento', widget.dataDocumento),
+                      context,
+                      'Data do Documento',
+                      widget.dataDocumento,
+                    ),
                     const SizedBox(height: 16),
                     _buildCard(context, 'Excluído em', widget.dataExclusao),
                     const SizedBox(height: 24),
 
-                    // Ações
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
@@ -264,10 +322,7 @@ class _VisualizarDocumentoApagadoState
         decoration: ShapeDecoration(
           color: const Color(0xFFF5FAFC),
           shape: RoundedRectangleBorder(
-            side: const BorderSide(
-              width: 1,
-              color: Color(0xFFBFC8CB),
-            ),
+            side: const BorderSide(width: 1, color: Color(0xFFBFC8CB)),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
@@ -312,9 +367,7 @@ class _VisualizarDocumentoApagadoState
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: cor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(100),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
       child: Row(

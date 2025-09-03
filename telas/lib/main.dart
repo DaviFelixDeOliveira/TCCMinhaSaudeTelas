@@ -1,109 +1,86 @@
 import 'package:flutter/material.dart';
-import 'widgets/navbar.dart';
-import 'widgets/bottom_navbar.dart';
-import 'telas/Lixeira/visualizarDocumentoApagado.dart';
+import 'package:flutter/services.dart';
+import '../widgets/navbar.dart';
+import '../widgets/bottom_navbar.dart';
 
-// --- Widget do item de documento ---
-class DocumentoItem extends StatelessWidget {
-  final String titulo;
-  final String iconePath;
-  final String data;
-  final String diasRestantes;
-  final VoidCallback onTap;
-
-  const DocumentoItem({
-    super.key,
-    required this.titulo,
-    required this.iconePath,
-    required this.data,
-    required this.diasRestantes,
-    required this.onTap,
-  });
+class ListarCompartilhamento extends StatefulWidget {
+  const ListarCompartilhamento({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: 120,
-        padding: const EdgeInsets.all(4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  State<ListarCompartilhamento> createState() =>
+      _ListarCompartilhamentoState();
+}
+
+class _ListarCompartilhamentoState extends State<ListarCompartilhamento> {
+  int abaAtiva = 1;
+
+  final List<Map<String, String>> codigos = [
+    {'codigo': 'IMBLI7S8QO', 'validade': '02-06-2025 | 18:00'},
+    {'codigo': 'A1B2C3D4E5', 'validade': '15-07-2025 | 12:00'},
+    {'codigo': 'Z9Y8X7W6V5', 'validade': '20-08-2025 | 09:30'},
+    {'codigo': 'QWERTY1234', 'validade': '01-09-2025 | 14:45'},
+    {'codigo': 'ASDFGH5678', 'validade': '10-10-2025 | 16:00'},
+  ];
+
+  void mostrarSnackbar(String mensagem) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.clearSnackBars();
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF2B3133),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        content: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(),
-              child: Image.asset(
-                iconePath,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(height: 4),
-            SizedBox(
-              width: 112,
+            Expanded(
               child: Text(
-                titulo,
-                textAlign: TextAlign.center,
+                mensagem,
                 style: const TextStyle(
-                  color: Color(0xFF171C1E),
-                  fontSize: 12,
+                  color: Color(0xFFECF2F4),
+                  fontSize: 14,
                   fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  height: 1.33,
-                  letterSpacing: 0.50,
+                  fontWeight: FontWeight.w400,
+                  height: 1.43,
+                  letterSpacing: 0.25,
                 ),
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              "$diasRestantes dias",
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontSize: 10,
-                fontFamily: 'Roboto',
-              ),
+            IconButton(
+              onPressed: () => scaffoldMessenger.hideCurrentSnackBar(),
+              icon: const Icon(Icons.close, size: 24, color: Color(0xFFECF2F4)),
+              tooltip: 'Fechar',
             ),
           ],
         ),
       ),
     );
   }
-}
-
-// --- Tela de documentos em Grid ---
-class TelaDocumentos extends StatelessWidget {
-  final List<Map<String, String>> documentos;
-
-  const TelaDocumentos({
-    super.key,
-    required this.documentos,
-  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Navbar(
             mostrarIconeVoltar: true,
-            mostrarIconeMais: true,
+            mostrarIconeMais: false,
             mostrarImagem: true,
           ),
           const SizedBox(height: 16),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Lixeira',
-              style: TextStyle(
-                color: Color(0xFF171C1E),
-                fontSize: 22,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
-                height: 1.27,
+            child: SizedBox(
+              width: 380,
+              child: Text(
+                'Códigos de Compartilhamento',
+                style: TextStyle(
+                  color: Color(0xFF171C1E),
+                  fontSize: 22,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w500,
+                  height: 1.27,
+                ),
               ),
             ),
           ),
@@ -111,44 +88,104 @@ class TelaDocumentos extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                alignment: WrapAlignment.start,
-                runAlignment: WrapAlignment.start,
-                spacing: 8,
-                runSpacing: 8,
-                children: documentos.map((doc) {
-                  return DocumentoItem(
-                    titulo: doc['titulo']!,
-                    data: doc['data']!,
-                    diasRestantes: doc['diasRestantes']!,
-                    iconePath: 'assets/images/DocumentIcon.png',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VisualizarDocumentoApagado(
-                            tituloDocumento: doc['titulo']!,
-                            paciente: 'Ana Beatriz Rocha',
-                            medico: 'Dra. Carolina Mendes',
-                            tipoDocumento: 'Tomografia',
-                            dataDocumento: doc['data']!,
-                            dataExclusao: '02/09/2025', // Futuramente podemos substituir por cálculo baseado em diasRestantes
+              child: ListView.separated(
+                itemCount: codigos.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = codigos[index];
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFF5FAFC),
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          width: 1,
+                          color: Color(0xFFBFC8CB),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Lado esquerdo: código e validade
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    item['codigo']!,
+                                    style: const TextStyle(
+                                      color: Color(0xFF171C1E),
+                                      fontSize: 16,
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.50,
+                                      letterSpacing: 0.15,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await Clipboard.setData(
+                                          ClipboardData(text: item['codigo']!));
+                                      mostrarSnackbar(
+                                          'Código copiado para a área de transferência');
+                                    },
+                                    child: Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFD9D9D9),
+                                        shape: BoxShape.rectangle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.copy,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Válido até ${item['validade']}',
+                                style: const TextStyle(
+                                  color: Color(0xFF171C1E),
+                                  fontSize: 14,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.43,
+                                  letterSpacing: 0.25,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
+                        // Lado direito: ícone de deletar
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.delete_outline,
+                              size: 24, color: Colors.redAccent),
+                        ),
+                      ],
+                    ),
                   );
-                }).toList(),
+                },
               ),
             ),
           ),
         ],
       ),
       bottomNavigationBar: BottomNavbar(
-        indexAtivo: 2, // Aba Lixeira ativa
+        indexAtivo: abaAtiva,
         onTap: (index) {
-          // Aqui você pode tratar a troca de abas
-          print('Aba selecionada: $index');
+          setState(() {
+            abaAtiva = index;
+          });
         },
       ),
     );
@@ -172,30 +209,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: TelaDocumentos(
-        documentos: [
-          {
-            'titulo': 'Tomografia da Jaqueline Souza',
-            'data': '15/01/2023',
-            'diasRestantes': '30',
-          },
-          {
-            'titulo': 'Hemograma do Marcos Lima',
-            'data': '02/2020',
-            'diasRestantes': '15',
-          },
-          {
-            'titulo': 'Hemograma da Ana Beatriz Rocha',
-            'data': '03/2020',
-            'diasRestantes': '25',
-          },
-          {
-            'titulo': 'Tomografia do Haldol Daniel',
-            'data': '12/2021',
-            'diasRestantes': '5',
-          },
-        ],
-      ),
+      home: const ListarCompartilhamento(),
     );
   }
 }
