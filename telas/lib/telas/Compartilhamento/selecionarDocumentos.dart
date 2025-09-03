@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../widgets/navbar.dart';
 import '../../widgets/bottom_navbar.dart';
 
@@ -35,6 +37,9 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
       'Tomografia Craniana',
     ],
   };
+
+  String? codigoGerado; // código gerado dinamicamente
+  List<String> codigosCriados = []; // lista de códigos criados
 
   @override
   void initState() {
@@ -107,6 +112,32 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
     );
   }
 
+  String gerarCodigoAleatorio() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final rand = Random();
+    return List.generate(10, (index) => chars[rand.nextInt(chars.length)])
+        .join();
+  }
+
+  void _compartilharDocumentos() {
+    codigoGerado = gerarCodigoAleatorio();
+    codigosCriados.add(codigoGerado!);
+
+    Clipboard.setData(ClipboardData(text: codigoGerado!));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Código '$codigoGerado' criado com sucesso"),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    setState(() {});
+  }
+
+  bool get algumSelecionado =>
+      selecionados.values.any((selecionado) => selecionado);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,41 +152,122 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: ListView(
-                children: pacientes.entries.map((entry) {
-                  final nomePaciente = entry.key;
-                  final documentos = entry.value;
+                children: [
+                  // Lista de pacientes e documentos
+                  ...pacientes.entries.map((entry) {
+                    final nomePaciente = entry.key;
+                    final documentos = entry.value;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 380,
-                        child: Text(
-                          nomePaciente,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w500,
-                            height: 1.50,
-                            letterSpacing: 0.15,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 380,
+                          child: Text(
+                            nomePaciente,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              height: 1.50,
+                              letterSpacing: 0.15,
+                            ),
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: documentos.map(_buildDocumento).toList(),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    );
+                  }).toList(),
+
+                  // Lista de códigos gerados
+                  ...codigosCriados.map((codigo) {
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(16),
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFF5FAFC),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                              width: 1, color: Color(0xFFBFC8CB)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: documentos.map(_buildDocumento).toList(),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      codigo,
+                                      style: const TextStyle(
+                                        color: Color(0xFF171C1E),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Clipboard.setData(
+                                            ClipboardData(text: codigo));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                "Código '$codigo' copiado"),
+                                            duration: const Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                      child: const Icon(
+                                        Icons.copy,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          codigosCriados.remove(codigo);
+                                        });
+                                      },
+                                      child: const Icon(
+                                        Icons.delete,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Válido até 02-06-2025 | 18:00',
+                                  style: TextStyle(
+                                      color: Color(0xFF171C1E), fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                    ],
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ],
               ),
             ),
           ),
-          // Botões Cancelar e Próximo
+
+          // Botões
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -172,9 +284,7 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context); // volta para tela anterior
-                    },
+                    onTap: () => Navigator.pop(context),
                     child: Container(
                       decoration: ShapeDecoration(
                         color: const Color(0xFFCEE7EE),
@@ -190,9 +300,7 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                           style: TextStyle(
                             color: Color(0xFF334A50),
                             fontSize: 14,
-                            fontFamily: 'Roboto',
                             fontWeight: FontWeight.w500,
-                            height: 1.43,
                             letterSpacing: 0.10,
                           ),
                         ),
@@ -200,31 +308,30 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {
-                      // A ação do botão "Próximo" será implementada depois
-                    },
-                    child: Container(
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFF006879),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
+                    onTap: algumSelecionado ? _compartilharDocumentos : null,
+                    child: Opacity(
+                      opacity: algumSelecionado ? 1.0 : 0.4,
+                      child: Container(
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFF006879),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
                         ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      child: const Center(
-                        child: Text(
-                          'Próximo',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w500,
-                            height: 1.43,
-                            letterSpacing: 0.10,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        child: const Center(
+                          child: Text(
+                            'Próximo',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.10,
+                            ),
                           ),
                         ),
                       ),
@@ -238,9 +345,7 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
       ),
       bottomNavigationBar: BottomNavbar(
         indexAtivo: 1,
-        onTap: (index) {
-          // ação de navegação
-        },
+        onTap: (index) {},
       ),
     );
   }
