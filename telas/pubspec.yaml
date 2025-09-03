@@ -59,6 +59,8 @@ flutter:
     - assets/images/LogoMinhaSaude.png
     - assets/images/DocumentIcon.png
     - assets/images/restore.png
+    - assets/images/RadioChecked.png
+    - assets/images/RadioUnchecked.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

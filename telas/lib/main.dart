@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/navbar.dart';
 import '../widgets/bottom_navbar.dart';
+import 'telas/Compartilhamento/selecionarDocumentos.dart';
 
 class ListarCompartilhamento extends StatefulWidget {
   const ListarCompartilhamento({super.key});
@@ -14,13 +15,7 @@ class ListarCompartilhamento extends StatefulWidget {
 class _ListarCompartilhamentoState extends State<ListarCompartilhamento> {
   int abaAtiva = 1;
 
-  final List<Map<String, String>> codigos = [
-    {'codigo': 'IMBLI7S8QO', 'validade': '02-06-2025 | 18:00'},
-    {'codigo': 'A1B2C3D4E5', 'validade': '15-07-2025 | 12:00'},
-    {'codigo': 'Z9Y8X7W6V5', 'validade': '20-08-2025 | 09:30'},
-    {'codigo': 'QWERTY1234', 'validade': '01-09-2025 | 14:45'},
-    {'codigo': 'ASDFGH5678', 'validade': '10-10-2025 | 16:00'},
-  ];
+  final List<Map<String, String>> codigos = [];
 
   void mostrarSnackbar(String mensagem) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -57,6 +52,19 @@ class _ListarCompartilhamentoState extends State<ListarCompartilhamento> {
     );
   }
 
+  Future<void> _irParaCriarCodigo() async {
+    final novoCodigo = await Navigator.push<Map<String, String>>(
+      context,
+      MaterialPageRoute(builder: (_) => const SelecionarDocumentos()),
+    );
+
+    if (novoCodigo != null) {
+      setState(() {
+        codigos.insert(0, novoCodigo); // Adiciona o novo código no topo
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,97 +96,156 @@ class _ListarCompartilhamentoState extends State<ListarCompartilhamento> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ListView.separated(
-                itemCount: codigos.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final item = codigos[index];
-                  return Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFF5FAFC),
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 1,
-                          color: Color(0xFFBFC8CB),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Lado esquerdo: código e validade
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    item['codigo']!,
-                                    style: const TextStyle(
-                                      color: Color(0xFF171C1E),
-                                      fontSize: 16,
-                                      fontFamily: 'Roboto',
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.50,
-                                      letterSpacing: 0.15,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      await Clipboard.setData(
-                                          ClipboardData(text: item['codigo']!));
-                                      mostrarSnackbar(
-                                          'Código copiado para a área de transferência');
-                                    },
-                                    child: Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFD9D9D9),
-                                        shape: BoxShape.rectangle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.copy,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+              child: codigos.isEmpty
+                  ? const Center(child: Text("Nenhum código gerado ainda."))
+                  : ListView.separated(
+                      itemCount: codigos.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final item = codigos[index];
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: ShapeDecoration(
+                            color: const Color(0xFFF5FAFC),
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(
+                                width: 1,
+                                color: Color(0xFFBFC8CB),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Válido até ${item['validade']}',
-                                style: const TextStyle(
-                                  color: Color(0xFF171C1E),
-                                  fontSize: 14,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.43,
-                                  letterSpacing: 0.25,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Lado esquerdo: código e validade
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          item['codigo'] ?? '',
+                                          style: const TextStyle(
+                                            color: Color(0xFF171C1E),
+                                            fontSize: 16,
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.50,
+                                            letterSpacing: 0.15,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        GestureDetector(
+                                          onTap: () async {
+                                            await Clipboard.setData(
+                                              ClipboardData(
+                                                  text: item['codigo'] ?? ''),
+                                            );
+                                            mostrarSnackbar(
+                                              'Código copiado para a área de transferência',
+                                            );
+                                          },
+                                          child: const Icon(
+                                            Icons.copy,
+                                            size: 16,
+                                            color: Color(0xFF3F484B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Válido até ${item['validade'] ?? ''}',
+                                      style: const TextStyle(
+                                        color: Color(0xFF171C1E),
+                                        fontSize: 14,
+                                        fontFamily: 'Roboto',
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.43,
+                                        letterSpacing: 0.25,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    codigos.removeAt(index);
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 24,
+                                  color: Colors.redAccent,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        // Lado direito: ícone de deletar
-                        IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.delete_outline,
-                              size: 24, color: Colors.redAccent),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ),
         ],
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(right: 16, bottom: 8),
+        child: GestureDetector(
+          onTap: _irParaCriarCodigo,
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: const Color(0xFFA9EDFF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              shadows: const [
+                BoxShadow(
+                  color: Color(0x4C000000),
+                  blurRadius: 3,
+                  offset: Offset(0, 1),
+                ),
+                BoxShadow(
+                  color: Color(0x26000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                  spreadRadius: 3,
+                )
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 56,
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.add, size: 24, color: Color(0xFF004E5C)),
+                      SizedBox(width: 8),
+                      Text(
+                        'Novo Código',
+                        style: TextStyle(
+                          color: Color(0xFF004E5C),
+                          fontSize: 16,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          height: 1.50,
+                          letterSpacing: 0.15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       bottomNavigationBar: BottomNavbar(
         indexAtivo: abaAtiva,
