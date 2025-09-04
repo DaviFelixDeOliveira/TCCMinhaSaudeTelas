@@ -13,7 +13,6 @@ class SelecionarDocumentos extends StatefulWidget {
 
 class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
   final Map<String, bool> selecionados = {};
-
   final Map<String, List<String>> pacientes = {
     'Ana Beatriz Rocha': [
       'Exame de Sangue da Beatriz',
@@ -38,9 +37,6 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
     ],
   };
 
-  String? codigoGerado; // código gerado dinamicamente
-  List<String> codigosCriados = []; // lista de códigos criados
-
   @override
   void initState() {
     super.initState();
@@ -49,6 +45,124 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
         selecionados[doc] = false;
       }
     }
+  }
+
+  String gerarCodigoAleatorio() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final rand = Random();
+    return List.generate(10, (index) => chars[rand.nextInt(chars.length)]).join();
+  }
+
+  bool get algumSelecionado =>
+      selecionados.values.any((selecionado) => selecionado);
+
+  void mostrarDialogConfirmacao() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
+            child: Container(
+              width: 312,
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                color: const Color(0xFFE4E9EB),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 24, left: 24, right: 24, bottom: 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Criar código',
+                          style: TextStyle(
+                            color: Color(0xFF171C1E),
+                            fontSize: 24,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            height: 1.33,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Você tem certeza que deseja compartilhar esses documentos?',
+                          style: TextStyle(
+                            color: Color(0xFF3F484B),
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            height: 1.43,
+                            letterSpacing: 0.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 20, left: 8, right: 24, bottom: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: Color(0xFF4B6268),
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.10,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () {
+                            final codigo = gerarCodigoAleatorio();
+                            final validade = DateTime.now()
+                                .add(const Duration(days: 7));
+                            final validadeFormatada =
+                                '${validade.day.toString().padLeft(2, '0')}-${validade.month.toString().padLeft(2, '0')}-${validade.year} | ${validade.hour.toString().padLeft(2, '0')}:${validade.minute.toString().padLeft(2, '0')}';
+
+                            Navigator.of(context).pop(); // Fechar diálogo
+                            Navigator.of(context).pop({
+                              'codigo': codigo,
+                              'validade': validadeFormatada,
+                            });
+                          },
+                          child: const Text(
+                            'Compartilhar',
+                            style: TextStyle(
+                              color: Color(0xFF006879),
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildDocumento(String titulo) {
@@ -105,38 +219,12 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          selecionados[titulo] = !(selecionados[titulo] ?? false);
+          selecionados[titulo] = !selecionado;
         });
       },
       child: selecionado ? conteudo : Opacity(opacity: 0.5, child: conteudo),
     );
   }
-
-  String gerarCodigoAleatorio() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final rand = Random();
-    return List.generate(10, (index) => chars[rand.nextInt(chars.length)])
-        .join();
-  }
-
-  void _compartilharDocumentos() {
-    codigoGerado = gerarCodigoAleatorio();
-    codigosCriados.add(codigoGerado!);
-
-    Clipboard.setData(ClipboardData(text: codigoGerado!));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Código '$codigoGerado' criado com sucesso"),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-
-    setState(() {});
-  }
-
-  bool get algumSelecionado =>
-      selecionados.values.any((selecionado) => selecionado);
 
   @override
   Widget build(BuildContext context) {
@@ -152,133 +240,40 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: ListView(
-                children: [
-                  // Lista de pacientes e documentos
-                  ...pacientes.entries.map((entry) {
-                    final nomePaciente = entry.key;
-                    final documentos = entry.value;
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 380,
-                          child: Text(
-                            nomePaciente,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              height: 1.50,
-                              letterSpacing: 0.15,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: documentos.map(_buildDocumento).toList(),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    );
-                  }).toList(),
-
-                  // Lista de códigos gerados
-                  ...codigosCriados.map((codigo) {
-                    return Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      padding: const EdgeInsets.all(16),
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFFF5FAFC),
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                              width: 1, color: Color(0xFFBFC8CB)),
-                          borderRadius: BorderRadius.circular(12),
+                children: pacientes.entries.map((entry) {
+                  final nome = entry.key;
+                  final docs = entry.value;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nome,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                          color: Colors.black,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      codigo,
-                                      style: const TextStyle(
-                                        color: Color(0xFF171C1E),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Clipboard.setData(
-                                            ClipboardData(text: codigo));
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                                "Código '$codigo' copiado"),
-                                            duration: const Duration(seconds: 2),
-                                          ),
-                                        );
-                                      },
-                                      child: const Icon(
-                                        Icons.copy,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          codigosCriados.remove(codigo);
-                                        });
-                                      },
-                                      child: const Icon(
-                                        Icons.delete,
-                                        size: 24,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Válido até 02-06-2025 | 18:00',
-                                  style: TextStyle(
-                                      color: Color(0xFF171C1E), fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: docs.map(_buildDocumento).toList(),
                       ),
-                    );
-                  }).toList(),
-                ],
+                      const SizedBox(height: 24),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
           ),
-
-          // Botões
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: const ShapeDecoration(
+            decoration: const BoxDecoration(
               color: Color(0xFFE9EFF1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(28),
-                  topRight: Radius.circular(28),
-                ),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Row(
               children: [
@@ -311,7 +306,7 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: GestureDetector(
-                    onTap: algumSelecionado ? _compartilharDocumentos : null,
+                    onTap: algumSelecionado ? mostrarDialogConfirmacao : null,
                     child: Opacity(
                       opacity: algumSelecionado ? 1.0 : 0.4,
                       child: Container(
