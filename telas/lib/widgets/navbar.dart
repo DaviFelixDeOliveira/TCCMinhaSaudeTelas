@@ -28,7 +28,6 @@ class Navbar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // --- Lado Esquerdo: Voltar + Imagem ou Texto ---
           Row(
             children: [
               if (mostrarIconeVoltar)

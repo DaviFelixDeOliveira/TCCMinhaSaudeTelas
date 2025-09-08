@@ -37,12 +37,21 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
     ],
   };
 
+  final Map<String, Map<String, String>> metadadosDocumentos = {};
+
   @override
   void initState() {
     super.initState();
-    for (var docs in pacientes.values) {
-      for (var doc in docs) {
+    for (var entry in pacientes.entries) {
+      final nomePaciente = entry.key;
+      for (var doc in entry.value) {
         selecionados[doc] = false;
+        metadadosDocumentos[doc] = {
+          'paciente': nomePaciente,
+          'tipo': _tipoAleatorio(),
+          'doutor': _doutorAleatorio(),
+          'data': _dataAleatoria(),
+        };
       }
     }
   }
@@ -50,11 +59,59 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
   String gerarCodigoAleatorio() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final rand = Random();
-    return List.generate(10, (index) => chars[rand.nextInt(chars.length)]).join();
+    return List.generate(10, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
   bool get algumSelecionado =>
       selecionados.values.any((selecionado) => selecionado);
+
+  String _tipoAleatorio() {
+    const tipos = [
+      'Raio-X',
+      'Tomografia',
+      'Ultrassom',
+      'Receita',
+      'Consulta',
+      'Exame de Sangue',
+      'Biópsia'
+    ];
+    return tipos[Random().nextInt(tipos.length)];
+  }
+
+  String _doutorAleatorio() {
+    const doutores = [
+      'Dr. Lucas Martins',
+      'Dra. Paula Lima',
+      'Dr. Fernando Souza',
+      'Dra. Carolina Mendes'
+    ];
+    return doutores[Random().nextInt(doutores.length)];
+  }
+
+  String _dataAleatoria() {
+    final now = DateTime.now();
+    final randomDays = Random().nextInt(1500);
+    final date = now.subtract(Duration(days: randomDays));
+    return '${_mesPorExtenso(date.month)} de ${date.year}';
+  }
+
+  String _mesPorExtenso(int mes) {
+    const meses = [
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro'
+    ];
+    return meses[mes - 1];
+  }
 
   void mostrarDialogConfirmacao() {
     showDialog(
@@ -79,53 +136,34 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(
-                      top: 24, left: 24, right: 24, bottom: 0),
+                        top: 24, left: 24, right: 24, bottom: 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
                           'Criar código',
                           style: TextStyle(
-                            color: Color(0xFF171C1E),
                             fontSize: 24,
-                            fontFamily: 'Roboto',
                             fontWeight: FontWeight.w400,
-                            height: 1.33,
                           ),
                         ),
                         SizedBox(height: 16),
                         Text(
                           'Você tem certeza que deseja compartilhar esses documentos?',
-                          style: TextStyle(
-                            color: Color(0xFF3F484B),
-                            fontSize: 14,
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w400,
-                            height: 1.43,
-                            letterSpacing: 0.25,
-                          ),
+                          style: TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(
-                      top: 20, left: 8, right: 24, bottom: 20),
+                        top: 20, left: 8, right: 24, bottom: 20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            'Cancelar',
-                            style: TextStyle(
-                              color: Color(0xFF4B6268),
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.10,
-                            ),
-                          ),
+                          child: const Text('Cancelar'),
                         ),
                         const SizedBox(width: 8),
                         TextButton(
@@ -136,22 +174,30 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                             final validadeFormatada =
                                 '${validade.day.toString().padLeft(2, '0')}-${validade.month.toString().padLeft(2, '0')}-${validade.year} | ${validade.hour.toString().padLeft(2, '0')}:${validade.minute.toString().padLeft(2, '0')}';
 
-                            Navigator.of(context).pop(); // Fechar diálogo
+                            final List<Map<String, String>> docsSelecionados = [];
+
+                            for (var entry in selecionados.entries) {
+                              if (entry.value) {
+                                final titulo = entry.key;
+                                final metadata = metadadosDocumentos[titulo]!;
+                                docsSelecionados.add({
+                                  'titulo': titulo,
+                                  'paciente': metadata['paciente']!,
+                                  'tipo': metadata['tipo']!,
+                                  'doutor': metadata['doutor']!,
+                                  'data': metadata['data']!,
+                                });
+                              }
+                            }
+
+                            Navigator.of(context).pop(); // fechar diálogo
                             Navigator.of(context).pop({
                               'codigo': codigo,
                               'validade': validadeFormatada,
+                              'documentos': docsSelecionados,
                             });
                           },
-                          child: const Text(
-                            'Compartilhar',
-                            style: TextStyle(
-                              color: Color(0xFF006879),
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.10,
-                            ),
-                          ),
+                          child: const Text('Compartilhar'),
                         ),
                       ],
                     ),
@@ -203,12 +249,8 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
               titulo,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFF171C1E),
                 fontSize: 12,
-                fontFamily: 'Roboto',
                 fontWeight: FontWeight.w500,
-                height: 1.33,
-                letterSpacing: 0.50,
               ),
             ),
           ),
@@ -251,8 +293,6 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          height: 1.5,
-                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -296,7 +336,6 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                             color: Color(0xFF334A50),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            letterSpacing: 0.10,
                           ),
                         ),
                       ),
@@ -325,7 +364,6 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                               color: Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              letterSpacing: 0.10,
                             ),
                           ),
                         ),
