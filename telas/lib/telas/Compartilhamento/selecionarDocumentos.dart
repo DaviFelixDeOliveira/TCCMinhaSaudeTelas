@@ -274,9 +274,9 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
       body: Column(
         children: [
           const Navbar(
-            mostrarIconeVoltar: true,
-            mostrarIconeMais: false,
+            mostrarIconeVoltar: false,
             mostrarImagem: true,
+            tipoIconeDireito: NavbarIcon.nenhum,
           ),
           Expanded(
             child: Padding(
@@ -376,9 +376,14 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavbar(
-        indexAtivo: 1,
-        onTap: (index) {},
+      bottomNavigationBar: IgnorePointer(
+        // 👈 BOTTOM NAVBAR NÃO CLICÁVEL
+        child: BottomNavbar(
+          indexAtivo: 1, // Compartilhar é a aba 1
+          onTap: (index) {
+            // Esta função não será chamada devido ao IgnorePointer
+          },
+        ),
       ),
     );
   }

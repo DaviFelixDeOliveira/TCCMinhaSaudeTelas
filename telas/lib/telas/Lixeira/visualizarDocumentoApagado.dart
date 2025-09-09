@@ -28,6 +28,50 @@ class VisualizarDocumentoApagado extends StatefulWidget {
 class _VisualizarDocumentoApagadoState
     extends State<VisualizarDocumentoApagado> {
   int abaAtiva = 2;
+  bool documentoVisivel = true;
+
+  void _mostrarSnackbar(String mensagem) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.clearSnackBars();
+
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF2B3133),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        content: Row(
+          children: [
+            Expanded(
+              child: Text(
+                mensagem,
+                style: const TextStyle(
+                  color: Color(0xFFECF2F4),
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  height: 1.43,
+                  letterSpacing: 0.25,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                scaffoldMessenger.hideCurrentSnackBar();
+              },
+              icon: const Icon(Icons.close, size: 24, color: Color(0xFFECF2F4)),
+              tooltip: 'Fechar',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _restaurarDocumento() {
+    _mostrarSnackbar('Documento restaurado com sucesso!');
+    Navigator.of(context).pop(true); // Retorna true para indicar ação
+  }
 
   void _mostrarDialogoExcluir() {
     showDialog(
@@ -78,7 +122,7 @@ class _VisualizarDocumentoApagadoState
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Ao excluir este item, ele será removido permanentemente e não poderá ser recuperado. Deseja continuar?',
+                          'Ao excluir este item, ele será removido PERMANENTEMENTE e não poderá ser recuperado. Deseja continuar?',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Color(0xFF3F484B),
@@ -144,13 +188,9 @@ class _VisualizarDocumentoApagadoState
                           ),
                           child: TextButton(
                             onPressed: () {
-                              Navigator.of(
-                                dialogContext,
-                              ).pop(); // Fecha o diálogo
-                              Navigator.of(
-                                context,
-                              ).pop(); // Volta para tela anterior
-                              _mostrarSnackbar(); // Mostra a snackbar
+                              Navigator.of(dialogContext).pop();
+                              _mostrarSnackbar('Documento apagado com sucesso!');
+                              Navigator.of(context).pop(true); // Retorna true
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(
@@ -182,44 +222,6 @@ class _VisualizarDocumentoApagadoState
     );
   }
 
-  void _mostrarSnackbar() {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    scaffoldMessenger.clearSnackBars();
-
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF2B3133),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        content: Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Documento apagado com sucesso.',
-                style: TextStyle(
-                  color: Color(0xFFECF2F4),
-                  fontSize: 14,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400,
-                  height: 1.43,
-                  letterSpacing: 0.25,
-                ),
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                scaffoldMessenger.hideCurrentSnackBar();
-              },
-              icon: const Icon(Icons.close, size: 24, color: Color(0xFFECF2F4)),
-              tooltip: 'Fechar',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -237,29 +239,48 @@ class _VisualizarDocumentoApagadoState
                     Navbar(
                       mostrarImagem: false,
                       mostrarIconeVoltar: true,
-                      mostrarIconeMais: false,
-                      titulo: widget.tituloDocumento,
+                      tipoIconeDireito: NavbarIcon.nenhum,
+                      titulo: widget.tituloDocumento.isNotEmpty
+                          ? widget.tituloDocumento
+                          : 'Documento Exemplo',
                     ),
-                    const SizedBox(height: 16),
-                    _buildCard(context, 'Nome do(a) Paciente', widget.paciente),
-                    const SizedBox(height: 16),
-                    _buildCard(context, 'Nome do(a) Médico(a)', widget.medico),
-                    const SizedBox(height: 16),
-                    _buildCard(
-                      context,
-                      'Tipo de Documento',
-                      widget.tipoDocumento,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildCard(
-                      context,
-                      'Data do Documento',
-                      widget.dataDocumento,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildCard(context, 'Excluído em', widget.dataExclusao),
-                    const SizedBox(height: 24),
 
+                    const SizedBox(height: 16),
+                    _buildCard(
+                        context,
+                        'Nome do(a) Paciente',
+                        widget.paciente.isNotEmpty
+                            ? widget.paciente
+                            : 'João da Silva'),
+                    const SizedBox(height: 16),
+                    _buildCard(
+                        context,
+                        'Nome do(a) Médico(a)',
+                        widget.medico.isNotEmpty
+                            ? widget.medico
+                            : 'Dra. Ana Pereira'),
+                    const SizedBox(height: 16),
+                    _buildCard(
+                        context,
+                        'Tipo de Documento',
+                        widget.tipoDocumento.isNotEmpty
+                            ? widget.tipoDocumento
+                            : 'Hemograma'),
+                    const SizedBox(height: 16),
+                    _buildCard(
+                        context,
+                        'Data do Documento',
+                        widget.dataDocumento.isNotEmpty
+                            ? widget.dataDocumento
+                            : '01/01/2025'),
+                    const SizedBox(height: 16),
+                    _buildCard(
+                        context,
+                        'Excluído em',
+                        widget.dataExclusao.isNotEmpty
+                            ? widget.dataExclusao
+                            : '07/09/2025'),
+                    const SizedBox(height: 24),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
@@ -282,7 +303,7 @@ class _VisualizarDocumentoApagadoState
                             cor: const Color(0xFF006879),
                             texto: 'Restaurar',
                             iconePath: 'assets/images/restore.png',
-                            onPressed: () {},
+                            onPressed: _restaurarDocumento,
                           ),
                           const SizedBox(width: 12),
                           _buildBotao(
@@ -299,13 +320,14 @@ class _VisualizarDocumentoApagadoState
               ),
             ),
           ),
-          BottomNavbar(
-            indexAtivo: abaAtiva,
-            onTap: (index) {
-              setState(() {
-                abaAtiva = index;
-              });
-            },
+          IgnorePointer(
+            // 👈 BOTTOM NAVBAR NÃO CLICÁVEL
+            child: BottomNavbar(
+              indexAtivo: abaAtiva,
+              onTap: (index) {
+                // Esta função não será chamada devido ao IgnorePointer
+              },
+            ),
           ),
         ],
       ),

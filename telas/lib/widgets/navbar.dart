@@ -1,22 +1,41 @@
 import 'package:flutter/material.dart';
 
+enum NavbarIcon {
+  nenhum,
+  mais,
+  sort,
+}
+
 class Navbar extends StatelessWidget {
-  final bool mostrarImagem;           // Mostra logo?
-  final bool mostrarIconeVoltar;      // Mostra seta?
-  final bool mostrarIconeMais;        // Mostra três pontinhos?
-  final String? titulo;               // Texto se imagem não for mostrada
+  final bool mostrarImagem;
+  final bool mostrarIconeVoltar;
+  final String? titulo;
+  final NavbarIcon tipoIconeDireito;
 
   const Navbar({
     super.key,
     this.mostrarImagem = false,
     this.mostrarIconeVoltar = false,
-    this.mostrarIconeMais = false,
     this.titulo,
+    this.tipoIconeDireito = NavbarIcon.nenhum,
   });
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    IconData? _icone;
+    switch (tipoIconeDireito) {
+      case NavbarIcon.mais:
+        _icone = Icons.more_vert;
+        break;
+      case NavbarIcon.sort:
+        _icone = Icons.sort;
+        break;
+      case NavbarIcon.nenhum:
+        _icone = null;
+        break;
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -26,7 +45,6 @@ class Navbar extends StatelessWidget {
       color: const Color(0xFFE9EFF1),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
             children: [
@@ -54,13 +72,11 @@ class Navbar extends StatelessWidget {
                     ),
             ],
           ),
-
-          // --- Lado Direito: Ícone de opções ---
-          if (mostrarIconeMais)
+          if (_icone != null)
             IconButton(
-              icon: const Icon(Icons.more_vert),
+              icon: Icon(_icone),
               onPressed: () {
-                // ação dos três pontinhos
+                // Ação para o ícone
               },
             ),
         ],

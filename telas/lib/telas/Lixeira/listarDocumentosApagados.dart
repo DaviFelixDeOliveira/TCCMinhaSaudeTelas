@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/navbar.dart';
-import '../../widgets/bottom_navbar.dart';
+import 'visualizarDocumentoApagado.dart';
 
 // --- Widget do item de documento ---
 class DocumentoItem extends StatelessWidget {
@@ -82,6 +82,46 @@ class ListarDocumentosApagados extends StatefulWidget {
 
 class _ListarDocumentosApagadosState extends State<ListarDocumentosApagados> {
   int abaAtiva = 2;
+  late List<Map<String, String>> documentos;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializa com documentos fictícios se a lista estiver vazia
+    documentos = widget.documentos.isEmpty 
+      ? _getDocumentosFicticios()
+      : List.from(widget.documentos);
+  }
+
+  // Documentos fictícios para exemplo
+  List<Map<String, String>> _getDocumentosFicticios() {
+    return [
+      {
+        'titulo': 'Receita Médica',
+        'data': '15/12/2023',
+        'diasRestantes': '5',
+        'paciente': 'João Silva',
+        'medico': 'Dra. Ana Costa',
+        'tipoDocumento': 'Receita',
+        'dataExclusao': '20/12/2023'
+      },
+      {
+        'titulo': 'Exame de Sangue',
+        'data': '10/12/2023',
+        'diasRestantes': '3',
+        'paciente': 'Maria Santos',
+        'medico': 'Dr. Carlos Lima',
+        'tipoDocumento': 'Exame',
+        'dataExclusao': '18/12/2023'
+      }
+    ];
+  }
+
+  void removerDocumento(int index) {
+    setState(() {
+      documentos.removeAt(index);
+    });
+  }
 
   void mostrarSnackbar(String mensagem) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -121,13 +161,14 @@ class _ListarDocumentosApagadosState extends State<ListarDocumentosApagados> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // REMOVIDO: bottomNavigationBar daqui (será adicionado no main.dart)
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Navbar(
-            mostrarIconeVoltar: true,
-            mostrarIconeMais: false,
+            mostrarIconeVoltar: false,
             mostrarImagem: true,
+            tipoIconeDireito: NavbarIcon.nenhum,
           ),
           const SizedBox(height: 16),
           const Padding(
@@ -147,35 +188,62 @@ class _ListarDocumentosApagadosState extends State<ListarDocumentosApagados> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                alignment: WrapAlignment.start,
-                runAlignment: WrapAlignment.start,
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.documentos.map((doc) {
-                  return DocumentoItem(
-                    titulo: doc['titulo']!,
-                    data: doc['data']!,
-                    diasRestantes: doc['diasRestantes']!,
-                    iconePath: 'assets/images/DocumentIcon.png',
-                    onTap: () {
-                      // Aqui você chama a tela de visualização do documento apagado
-                      // e passa os callbacks para restaurar ou excluir.
-                    },
-                  );
-                }).toList(),
-              ),
+              child: documentos.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Nenhum documento apagado ainda',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )
+                  : Wrap(
+                      alignment: WrapAlignment.start,
+                      runAlignment: WrapAlignment.start,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(documentos.length, (index) {
+                        final doc = documentos[index];
+                        return DocumentoItem(
+                          titulo: doc['titulo']!,
+                          data: doc['data']!,
+                          diasRestantes: doc['diasRestantes']!,
+                          iconePath: 'assets/images/DocumentIcon.png',
+                          onTap: () async {
+                            // Navegar para a tela de visualização e aguardar resultado
+                            final resultado = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => VisualizarDocumentoApagado(
+                                  tituloDocumento: doc['titulo']!,
+                                  paciente: doc['paciente'] ?? '',
+                                  medico: doc['medico'] ?? '',
+                                  tipoDocumento: doc['tipoDocumento'] ?? '',
+                                  dataDocumento: doc['data'] ?? '',
+                                  dataExclusao: doc['dataExclusao'] ?? '',
+                                ),
+                              ),
+                            );
+                            
+                            // Verificar o tipo de ação realizada
+                            if (resultado != null) {
+                              removerDocumento(index);
+                              
+                              if (resultado == 'excluido') {
+                                mostrarSnackbar('Documento excluído com sucesso');
+                              } else if (resultado == 'restaurado') {
+                                mostrarSnackbar('Documento restaurado com sucesso');
+                              }
+                            }
+                          },
+                        );
+                      }),
+                    ),
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: BottomNavbar(
-        indexAtivo: abaAtiva,
-        onTap: (index) {
-          setState(() {
-            abaAtiva = index;
-          });
-        },
       ),
     );
   }
