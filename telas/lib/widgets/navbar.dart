@@ -11,6 +11,8 @@ class Navbar extends StatelessWidget {
   final bool mostrarIconeVoltar;
   final String? titulo;
   final NavbarIcon tipoIconeDireito;
+  final VoidCallback? onIconeDireitoPressed;
+  final VoidCallback? onVoltarPressed; // Adicione este parâmetro
 
   const Navbar({
     super.key,
@@ -18,6 +20,8 @@ class Navbar extends StatelessWidget {
     this.mostrarIconeVoltar = false,
     this.titulo,
     this.tipoIconeDireito = NavbarIcon.nenhum,
+    this.onIconeDireitoPressed,
+    this.onVoltarPressed, // Adicione aqui
   });
 
   @override
@@ -51,9 +55,7 @@ class Navbar extends StatelessWidget {
               if (mostrarIconeVoltar)
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: onVoltarPressed ?? () => Navigator.pop(context), // Use o callback
                 ),
               mostrarImagem
                   ? Image.asset(
@@ -75,9 +77,7 @@ class Navbar extends StatelessWidget {
           if (_icone != null)
             IconButton(
               icon: Icon(_icone),
-              onPressed: () {
-                // Ação para o ícone
-              },
+              onPressed: onIconeDireitoPressed,
             ),
         ],
       ),
