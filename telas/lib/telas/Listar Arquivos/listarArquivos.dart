@@ -308,10 +308,10 @@ class _ListarArquivosState extends State<ListarArquivos> {
           Column(
             children: [
               Navbar(
-                mostrarImagem: false,
+                mostrarImagem: true,
                 mostrarIconeVoltar: false,
                 tipoIconeDireito: NavbarIcon.sort,
-                titulo: 'Documentos',
+                titulo: '',
                 onIconeDireitoPressed: toggleMenuOrdenacao,
               ),
               const SizedBox(height: 16),

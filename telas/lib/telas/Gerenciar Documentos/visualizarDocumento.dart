@@ -78,13 +78,14 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
         setState(() {
           widget.documento.addAll(resultado);
         });
+        _mostrarSnackBarEditado();
       }
     });
   }
 
   void _removerDocumento() {
     _toggleMenuOpcoes();
-    print('Remover documento: ${widget.documento['titulo']}');
+    _mostrarDialogoExclusao();
   }
 
   void _baixarDocumento() {
@@ -95,6 +96,317 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
   void _imprimirDocumento() {
     _toggleMenuOpcoes();
     print('Imprimir documento: ${widget.documento['titulo']}');
+  }
+
+  void _mostrarSnackBarEditado() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 100),
+        content: _buildSnackBarEditado(),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _mostrarSnackBarExcluido() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 100),
+        content: _buildSnackBarExcluido(),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Widget _buildSnackBarEditado() {
+    return Container(
+      width: 344,
+      height: 48,
+      padding: const EdgeInsets.only(left: 16),
+      decoration: ShapeDecoration(
+        color: const Color(0xFF2B3133),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        shadows: const [
+          BoxShadow(
+            color: Color(0x4C000000),
+            blurRadius: 3,
+            offset: Offset(0, 1),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+            spreadRadius: 3,
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Dados editados com sucesso',
+              style: TextStyle(
+                color: Color(0xFFECF2F4),
+                fontSize: 14,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+                height: 1.43,
+                letterSpacing: 0.25,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+            child: const Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.close, color: Color(0xFFECF2F4), size: 24),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSnackBarExcluido() {
+    return Container(
+      width: 344,
+      height: 48,
+      padding: const EdgeInsets.only(left: 16),
+      decoration: ShapeDecoration(
+        color: const Color(0xFF2B3133),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        shadows: const [
+          BoxShadow(
+            color: Color(0x4C000000),
+            blurRadius: 3,
+            offset: Offset(0, 1),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+            spreadRadius: 3,
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Documento movido para a lixeira.',
+              style: TextStyle(
+                color: Color(0xFFECF2F4),
+                fontSize: 14,
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+                height: 1.43,
+                letterSpacing: 0.25,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+            child: const Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.close, color: Color(0xFFECF2F4), size: 24),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _mostrarDialogoExclusao() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: _buildDialogoExclusao(),
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogoExclusao() {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
+      child: Container(
+        width: 312,
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: const Color(0xFFE4E9EB),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 24, left: 24, right: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 264,
+                    child: Text(
+                      'Excluir Documento?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: const Color(0xFF171C1E),
+                        fontSize: 24,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        height: 1.33,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 264,
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          const TextSpan(
+                            text: 'Tem certeza que deseja mover ',
+                            style: TextStyle(
+                              color: Color(0xFF3F484B),
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              height: 1.43,
+                              letterSpacing: 0.25,
+                            ),
+                          ),
+                          TextSpan(
+                            text: widget.documento['titulo'] ?? 'Este documento',
+                            style: const TextStyle(
+                              color: Color(0xFF3F484B),
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w700,
+                              height: 1.43,
+                              letterSpacing: 0.25,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: ' para a lixeira?',
+                            style: TextStyle(
+                              color: Color(0xFF3F484B),
+                              fontSize: 14,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              height: 1.43,
+                              letterSpacing: 0.25,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(
+                top: 20,
+                left: 24,
+                right: 24,
+                bottom: 20,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    height: 48,
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFBFC8CB),
+                          ),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          color: Color(0xFF3F484B),
+                          fontSize: 14,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          height: 1.43,
+                          letterSpacing: 0.10,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Fecha o diálogo
+                        _mostrarSnackBarExcluido();
+                        
+                        // Aguarda a SnackBar aparecer antes de voltar
+                        Future.delayed(const Duration(milliseconds: 1500), () {
+                          // Retorna para a tela anterior com um indicador de exclusão
+                          Navigator.pop(context, {'excluido': true, 'documento': widget.documento});
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFBA1A1A),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      ),
+                      child: const Text(
+                        'Excluir',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                          height: 1.43,
+                          letterSpacing: 0.10,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildInfoCard(String label, String value) {
@@ -241,7 +553,7 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                 mostrarImagem: false,
                 mostrarIconeVoltar: true,
                 tipoIconeDireito: NavbarIcon.mais,
-                titulo: 'Ver documento',
+                titulo: 'Documento',
                 onIconeDireitoPressed: _toggleMenuOpcoes,
               ),
               Expanded(
@@ -372,7 +684,7 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                       width: double.infinity,
                       height: 40,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFEFF4F6),
+                        color: const Color(0xFFEFF4F6),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(28),
                           topRight: Radius.circular(28),
