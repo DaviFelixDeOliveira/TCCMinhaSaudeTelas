@@ -3,6 +3,10 @@ import '../../widgets/navbar.dart';
 import '../../widgets/bottom_navbar.dart';
 import '../Gerenciar Documentos/visualizarDocumento.dart';
 
+// Import das telas para navegação
+import '../Compartilhamento/codigosCompartilhamento.dart';
+import '../Lixeira/listarDocumentosApagados.dart';
+
 class ListarArquivos extends StatefulWidget {
   const ListarArquivos({super.key});
 
@@ -114,6 +118,36 @@ class _ListarArquivosState extends State<ListarArquivos> {
       'dataAdicao': '2024-03-21'
     },
   ];
+
+  // Função para navegar entre as telas
+  void _navegarParaTela(int index) {
+    // Impede navegação redundante se já estivermos na tela atual
+    if (index == 0) return;
+
+    switch (index) {
+      case 1: // Compartilhar
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CodigosCompartilhamento()),
+        );
+        break;
+      case 2: // Lixeira
+        Navigator.push(
+          context,  
+          MaterialPageRoute(
+          builder: (context) => ListarDocumentosApagados(documentos: documentos),
+        ),
+
+        );
+        break;
+      case 3: // Configurações - criar esta tela posteriormente
+        // Por enquanto, mostra um placeholder
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tela de Configurações em desenvolvimento')),
+        );
+        break;
+    }
+  }
 
   void toggleAcoes() {
     setState(() {
@@ -296,87 +330,6 @@ class _ListarArquivosState extends State<ListarArquivos> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final documentosAgrupados = agruparDocumentos();
-    final mediaQuery = MediaQuery.of(context);
-    final bottomPadding = mediaQuery.padding.bottom;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Navbar(
-                mostrarImagem: true,
-                mostrarIconeVoltar: false,
-                tipoIconeDireito: NavbarIcon.sort,
-                titulo: '',
-                onIconeDireitoPressed: toggleMenuOrdenacao,
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.only(
-                    bottom: bottomPadding + 80,
-                  ),
-                  child: documentosAgrupados.isEmpty
-                      ? const Center(
-                          child: Text('Nenhum documento encontrado'),
-                        )
-                      : ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          children: documentosAgrupados.entries.map((entry) {
-                            final chave = entry.key;
-                            final documentosGrupo = entry.value;
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: Text(
-                                    chave,
-                                    style: const TextStyle(
-                                      color: Color(0xFF171C1E),
-                                      fontSize: 16,
-                                      fontFamily: 'Roboto',
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.50,
-                                      letterSpacing: 0.15,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 12,
-                                  runSpacing: 12,
-                                  children: documentosGrupo.map(_buildDocumento).toList(),
-                                ),
-                                const SizedBox(height: 24),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                ),
-              ),
-            ],
-          ),
-          
-          if (mostrarMenuOrdenacao) _buildMenuOrdenacao(),
-          
-          Positioned(
-            bottom: 80 + bottomPadding,
-            right: 16,
-            child: mostrarAcoes
-                ? _buildAcoesDocumento()
-                : _buildBotaoDocumento(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: const BottomNavbar(indexAtivo: 0),
-    );
-  }
-
   Widget _buildBotaoDocumento() {
     return GestureDetector(
       onTap: toggleAcoes,
@@ -473,6 +426,90 @@ class _ListarArquivosState extends State<ListarArquivos> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final documentosAgrupados = agruparDocumentos();
+    final mediaQuery = MediaQuery.of(context);
+    final bottomPadding = mediaQuery.padding.bottom;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Navbar(
+                mostrarImagem: true,
+                mostrarIconeVoltar: false,
+                tipoIconeDireito: NavbarIcon.sort,
+                titulo: '',
+                onIconeDireitoPressed: toggleMenuOrdenacao,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.only(
+                    bottom: bottomPadding + 80,
+                  ),
+                  child: documentosAgrupados.isEmpty
+                      ? const Center(
+                          child: Text('Nenhum documento encontrado'),
+                        )
+                      : ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          children: documentosAgrupados.entries.map((entry) {
+                            final chave = entry.key;
+                            final documentosGrupo = entry.value;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    chave,
+                                    style: const TextStyle(
+                                      color: Color(0xFF171C1E),
+                                      fontSize: 16,
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.50,
+                                      letterSpacing: 0.15,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 12,
+                                  runSpacing: 12,
+                                  children: documentosGrupo.map(_buildDocumento).toList(),
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                ),
+              ),
+            ],
+          ),
+          
+          if (mostrarMenuOrdenacao) _buildMenuOrdenacao(),
+          
+          Positioned(
+            bottom: 80 + bottomPadding,
+            right: 16,
+            child: mostrarAcoes
+                ? _buildAcoesDocumento()
+                : _buildBotaoDocumento(),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavbar(
+        indexAtivo: 0, // Documentos é a primeira aba
+        onTap: _navegarParaTela,
       ),
     );
   }

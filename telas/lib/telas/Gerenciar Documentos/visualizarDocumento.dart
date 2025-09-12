@@ -79,6 +79,9 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
           widget.documento.addAll(resultado);
         });
         _mostrarSnackBarEditado();
+        
+        // Retornar para a tela anterior com os dados atualizados
+        Navigator.pop(context, {'editado': true, 'documento': widget.documento});
       }
     });
   }

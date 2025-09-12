@@ -71,7 +71,7 @@ class DocumentoItem extends StatelessWidget {
 
 // --- Tela Lixeira ---
 class ListarDocumentosApagados extends StatefulWidget {
-  final List<Map<String, String>> documentos;
+final List<Map<String, dynamic>> documentos;
 
   const ListarDocumentosApagados({super.key, required this.documentos});
 
