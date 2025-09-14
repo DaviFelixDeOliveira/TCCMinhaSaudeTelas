@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../widgets/navbar.dart';
 import '../../widgets/bottom_navbar.dart';
 import '../Gerenciar Documentos/visualizarDocumento.dart';
-
-// Import das telas para navegação
-import '../Compartilhamento/codigosCompartilhamento.dart';
-import '../Lixeira/listarDocumentosApagados.dart';
 
 class ListarArquivos extends StatefulWidget {
   const ListarArquivos({super.key});
@@ -19,7 +17,7 @@ class _ListarArquivosState extends State<ListarArquivos> {
   bool mostrarMenuOrdenacao = false;
   String criterioOrdenacao = 'Nome do Paciente';
 
-  // Dados fictícios mais completos
+  // Dados fictícios mais completos (todos os 12 documentos)
   final List<Map<String, dynamic>> documentos = [
     {
       'paciente': 'Ana Beatriz Rocha',
@@ -119,138 +117,90 @@ class _ListarArquivosState extends State<ListarArquivos> {
     },
   ];
 
-  // Função para navegar entre as telas
+  /// ✅ Navegação com `context.go()` para manter o ShellRoute
   void _navegarParaTela(int index) {
-    // Impede navegação redundante se já estivermos na tela atual
     if (index == 0) return;
 
     switch (index) {
-      case 1: // Compartilhar
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const CodigosCompartilhamento()),
-        );
+      case 1:
+        context.go('/compartilhar');
         break;
-      case 2: // Lixeira
-        Navigator.push(
-          context,  
-          MaterialPageRoute(
-          builder: (context) => ListarDocumentosApagados(documentos: documentos),
-        ),
-
-        );
+      case 2:
+        context.go('/lixeira');
         break;
-      case 3: // Configurações - criar esta tela posteriormente
-        // Por enquanto, mostra um placeholder
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tela de Configurações em desenvolvimento')),
-        );
+      case 3:
+        context.go('/configuracoes');
         break;
     }
   }
 
-  void toggleAcoes() {
-    setState(() {
-      mostrarAcoes = !mostrarAcoes;
-    });
-  }
+  void toggleAcoes() => setState(() => mostrarAcoes = !mostrarAcoes);
+  
+  void toggleMenuOrdenacao() => setState(() => mostrarMenuOrdenacao = !mostrarMenuOrdenacao);
+  
+  void ordenarPor(String criterio) =>
+      setState(() => {criterioOrdenacao = criterio, mostrarMenuOrdenacao = false});
 
-  void toggleMenuOrdenacao() {
-    setState(() {
-      mostrarMenuOrdenacao = !mostrarMenuOrdenacao;
-    });
-  }
-
-  void ordenarPor(String criterio) {
-    setState(() {
-      criterioOrdenacao = criterio;
-      mostrarMenuOrdenacao = false;
-    });
+  // Fechar menu de ordenação ao clicar fora
+  void _fecharMenuOrdenacao() {
+    if (mostrarMenuOrdenacao) {
+      setState(() => mostrarMenuOrdenacao = false);
+    }
   }
 
   Map<String, List<Map<String, dynamic>>> agruparDocumentos() {
     Map<String, List<Map<String, dynamic>>> grupos = {};
+    for (var doc in documentos) {
+      String chave = switch (criterioOrdenacao) {
+        'Tipo de Documento' => doc['tipo'],
+        'Nome do Médico' => doc['medico'],
+        'Data do Documento' => doc['dataDocumento'],
+        'Data de Adição' => doc['dataAdicao'],
+        _ => doc['paciente'],
+      };
 
-    for (var documento in documentos) {
-      String chave = '';
-
-      switch (criterioOrdenacao) {
-        case 'Nome do Paciente':
-          chave = documento['paciente'];
-          break;
-        case 'Tipo de Documento':
-          chave = documento['tipo'];
-          break;
-        case 'Nome do Médico':
-          chave = documento['medico'];
-          break;
-        case 'Data do Documento':
-          chave = documento['dataDocumento'];
-          break;
-        case 'Data de Adição':
-          chave = documento['dataAdicao'];
-          break;
-        default:
-          chave = documento['paciente'];
-      }
-
-      if (!grupos.containsKey(chave)) {
-        grupos[chave] = [];
-      }
-      grupos[chave]!.add(documento);
+      grupos.putIfAbsent(chave, () => []).add(doc);
     }
 
-    // Ordenar as chaves alfabeticamente
-    var chavesOrdenadas = grupos.keys.toList();
-    chavesOrdenadas.sort();
-
-    Map<String, List<Map<String, dynamic>>> gruposOrdenados = {};
-    for (var chave in chavesOrdenadas) {
-      gruposOrdenados[chave] = grupos[chave]!;
-    }
-
-    return gruposOrdenados;
+    final chavesOrdenadas = grupos.keys.toList()..sort();
+    return {for (var chave in chavesOrdenadas) chave: grupos[chave]!};
   }
 
-  Widget _buildDocumento(Map<String, dynamic> documento) {
+  Widget _buildDocumento(Map<String, dynamic> doc) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final resultado = await Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => VisualizarDocumento(documento: documento),
-          ),
+          MaterialPageRoute(builder: (_) => VisualizarDocumento(documento: doc)),
         );
+        
+        // Atualizar a lista se o documento foi editado
+        if (resultado != null && resultado['editado'] == true) {
+          setState(() {
+            final index = documentos.indexWhere((d) => d['titulo'] == doc['titulo']);
+            if (index != -1) {
+              documentos[index] = resultado['documento'];
+            }
+          });
+        }
       },
       child: Container(
         width: 120,
         padding: const EdgeInsets.all(4),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(),
-              child: Image.asset('assets/images/DocumentIcon.png'),
-            ),
+            Image.asset('assets/images/DocumentIcon.png', width: 48, height: 48),
             const SizedBox(height: 4),
-            SizedBox(
-              width: 112,
-              child: Text(
-                documento['titulo'],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF171C1E),
-                  fontSize: 12,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  height: 1.33,
-                  letterSpacing: 0.50,
-                ),
+            Text(
+              doc['titulo'],
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF171C1E),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Roboto',
+                height: 1.33,
+                letterSpacing: 0.50,
               ),
             ),
           ],
@@ -260,71 +210,47 @@ class _ListarArquivosState extends State<ListarArquivos> {
   }
 
   Widget _buildMenuOrdenacao() {
+    const opcoes = [
+      'Nome do Paciente',
+      'Tipo de Documento',
+      'Nome do Médico',
+      'Data do Documento',
+      'Data de Adição'
+    ];
+
     return Positioned(
       right: 16,
       top: kToolbarHeight + MediaQuery.of(context).padding.top + 8,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 112, maxWidth: 280),
-        child: Container(
-          width: 280,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: ShapeDecoration(
-            color: const Color(0xFFE9EFF1),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            shadows: const [
-              BoxShadow(
-                color: Color(0x26000000),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-                spreadRadius: 2,
-              ),
-              BoxShadow(
-                color: Color(0x4C000000),
-                blurRadius: 2,
-                offset: Offset(0, 1),
-                spreadRadius: 0,
-              )
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildOpcaoOrdenacao('Agrupar por Nome do Paciente'),
-              _buildOpcaoOrdenacao('Agrupar por Tipo de Documento'),
-              _buildOpcaoOrdenacao('Agrupar por Nome do Médico'),
-              _buildOpcaoOrdenacao('Agrupar por Data do Documento'),
-              _buildOpcaoOrdenacao('Agrupar por Data de Adição'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOpcaoOrdenacao(String texto) {
-    return GestureDetector(
-      onTap: () => ordenarPor(texto.replaceFirst('Agrupar por ', '')),
       child: Container(
-        width: double.infinity,
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                texto,
-                style: const TextStyle(
-                  color: Color(0xFF171C1E),
-                  fontSize: 16,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400,
-                  height: 1.50,
-                  letterSpacing: 0.50,
+        width: 280,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE9EFF1),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: const [
+            BoxShadow(color: Color(0x26000000), blurRadius: 6, offset: Offset(0, 2)),
+            BoxShadow(color: Color(0x4C000000), blurRadius: 2, offset: Offset(0, 1)),
+          ],
+        ),
+        child: Column(
+          children: opcoes.map((opcao) {
+            return GestureDetector(
+              onTap: () => ordenarPor(opcao),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  'Agrupar por $opcao',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: 'Roboto',
+                    color: Color(0xFF171C1E),
+                  ),
                 ),
               ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );
@@ -334,67 +260,50 @@ class _ListarArquivosState extends State<ListarArquivos> {
     return GestureDetector(
       onTap: toggleAcoes,
       child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: ShapeDecoration(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
           color: const Color(0xFFA9EDFF),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          shadows: const [
-            BoxShadow(
-                color: Color(0x4C000000), blurRadius: 3, offset: Offset(0, 1)),
-            BoxShadow(
-                color: Color(0x26000000),
-                blurRadius: 8,
-                offset: Offset(0, 4),
-                spreadRadius: 3),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(color: Color(0x4C000000), blurRadius: 3, offset: Offset(0, 1)),
+            BoxShadow(color: Color(0x26000000), blurRadius: 8, offset: Offset(0, 4)),
           ],
         ),
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.add, color: Color(0xFF004E5C)),
-              SizedBox(width: 8),
-              Text(
-                'Documento',
-                style: TextStyle(
-                  color: Color(0xFF004E5C),
-                  fontSize: 16,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  height: 1.90,
-                  letterSpacing: 0.15,
-                ),
+        child: Row(
+          children: const [
+            Icon(Icons.add, color: Color(0xFF004E5C)),
+            SizedBox(width: 8),
+            Text(
+              'Documento',
+              style: TextStyle(
+                color: Color(0xFF004E5C),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Roboto',
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildAcoesDocumento() {
-    return SizedBox(
-      width: 148,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _acaoItem(Icons.document_scanner, 'Escanear', () {}),
-          const SizedBox(height: 8),
-          _acaoItem(Icons.upload_file, 'Upload', () {}),
-          const SizedBox(height: 8),
-          FloatingActionButton(
-            onPressed: toggleAcoes,
-            backgroundColor: const Color(0xFF006879),
-            elevation: 6,
-            child: const Icon(Icons.close, color: Colors.white),
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        _acaoItem(Icons.document_scanner, 'Escanear', () {}),
+        const SizedBox(height: 8),
+        _acaoItem(Icons.upload_file, 'Upload', () {}),
+        const SizedBox(height: 8),
+        FloatingActionButton(
+          onPressed: toggleAcoes,
+          backgroundColor: const Color(0xFF006879),
+          child: const Icon(Icons.close),
+        ),
+      ],
     );
   }
 
@@ -411,17 +320,15 @@ class _ListarArquivosState extends State<ListarArquivos> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icone, size: 24, color: const Color(0xFF004E5C)),
+            Icon(icone, color: const Color(0xFF004E5C)),
             const SizedBox(width: 8),
             Text(
               texto,
               style: const TextStyle(
                 color: Color(0xFF004E5C),
                 fontSize: 16,
-                fontFamily: 'Roboto',
                 fontWeight: FontWeight.w500,
-                height: 1.50,
-                letterSpacing: 0.15,
+                fontFamily: 'Roboto',
               ),
             ),
           ],
@@ -432,59 +339,47 @@ class _ListarArquivosState extends State<ListarArquivos> {
 
   @override
   Widget build(BuildContext context) {
-    final documentosAgrupados = agruparDocumentos();
+    final agrupados = agruparDocumentos();
     final mediaQuery = MediaQuery.of(context);
     final bottomPadding = mediaQuery.padding.bottom;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Navbar(
-                mostrarImagem: true,
-                mostrarIconeVoltar: false,
-                tipoIconeDireito: NavbarIcon.sort,
-                titulo: '',
-                onIconeDireitoPressed: toggleMenuOrdenacao,
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.only(
-                    bottom: bottomPadding + 80,
-                  ),
-                  child: documentosAgrupados.isEmpty
-                      ? const Center(
-                          child: Text('Nenhum documento encontrado'),
-                        )
+    return GestureDetector(
+      onTap: _fecharMenuOrdenacao,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                Navbar(
+                  mostrarImagem: true,
+                  mostrarIconeVoltar: false,
+                  tipoIconeDireito: NavbarIcon.sort,
+                  titulo: '',
+                  onIconeDireitoPressed: toggleMenuOrdenacao,
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: agrupados.isEmpty
+                      ? const Center(child: Text('Nenhum documento encontrado'))
                       : ListView(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          children: documentosAgrupados.entries.map((entry) {
-                            final chave = entry.key;
-                            final documentosGrupo = entry.value;
+                          children: agrupados.entries.map((entry) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: Text(
-                                    chave,
-                                    style: const TextStyle(
-                                      color: Color(0xFF171C1E),
-                                      fontSize: 16,
-                                      fontFamily: 'Roboto',
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.50,
-                                      letterSpacing: 0.15,
-                                    ),
+                                Text(
+                                  entry.key,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Roboto',
                                   ),
                                 ),
                                 const SizedBox(height: 12),
                                 Wrap(
                                   spacing: 12,
                                   runSpacing: 12,
-                                  children: documentosGrupo.map(_buildDocumento).toList(),
+                                  children: entry.value.map(_buildDocumento).toList(),
                                 ),
                                 const SizedBox(height: 24),
                               ],
@@ -492,24 +387,29 @@ class _ListarArquivosState extends State<ListarArquivos> {
                           }).toList(),
                         ),
                 ),
+              ],
+            ),
+            
+            if (mostrarMenuOrdenacao) 
+              GestureDetector(
+                onTap: _fecharMenuOrdenacao,
+                child: Container(
+                  color: Colors.transparent,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
               ),
-            ],
-          ),
-          
-          if (mostrarMenuOrdenacao) _buildMenuOrdenacao(),
-          
-          Positioned(
-            bottom: 80 + bottomPadding,
-            right: 16,
-            child: mostrarAcoes
-                ? _buildAcoesDocumento()
-                : _buildBotaoDocumento(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavbar(
-        indexAtivo: 0, // Documentos é a primeira aba
-        onTap: _navegarParaTela,
+            
+            if (mostrarMenuOrdenacao) _buildMenuOrdenacao(),
+            
+            Positioned(
+              bottom: 80 + bottomPadding,
+              right: 16,
+              child: mostrarAcoes ? _buildAcoesDocumento() : _buildBotaoDocumento(),
+            ),
+          ],
+        ),
+       
       ),
     );
   }

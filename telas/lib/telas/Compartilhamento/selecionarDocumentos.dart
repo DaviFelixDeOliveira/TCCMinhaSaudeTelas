@@ -113,8 +113,8 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
     return meses[mes - 1];
   }
 
-  void mostrarDialogConfirmacao() {
-    showDialog(
+  Future<void> mostrarDialogConfirmacao() async {
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) {
         return Dialog(
@@ -190,7 +190,6 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                               }
                             }
 
-                            Navigator.of(context).pop(); // fechar diálogo
                             Navigator.of(context).pop({
                               'codigo': codigo,
                               'validade': validadeFormatada,
@@ -209,6 +208,10 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
         );
       },
     );
+
+    if (result != null) {
+      Navigator.of(context).pop(result);
+    }
   }
 
   Widget _buildDocumento(String titulo) {
@@ -242,21 +245,21 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: 112,
-            child: Text(
-              titulo,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+            const SizedBox(height: 4),
+            SizedBox(
+              width: 112,
+              child: Text(
+                titulo,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
 
     return GestureDetector(
       onTap: () {
@@ -273,10 +276,11 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
     return Scaffold(
       body: Column(
         children: [
-          const Navbar(
-            mostrarIconeVoltar: false,
+          Navbar(
+            mostrarIconeVoltar: true,
             mostrarImagem: true,
             tipoIconeDireito: NavbarIcon.nenhum,
+            titulo: 'Selecionar Documentos',
           ),
           Expanded(
             child: Padding(
@@ -345,7 +349,9 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: GestureDetector(
-                    onTap: algumSelecionado ? mostrarDialogConfirmacao : null,
+                    onTap: algumSelecionado
+                        ? () async => await mostrarDialogConfirmacao()
+                        : null,
                     child: Opacity(
                       opacity: algumSelecionado ? 1.0 : 0.4,
                       child: Container(
@@ -375,15 +381,6 @@ class _SelecionarDocumentosState extends State<SelecionarDocumentos> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: IgnorePointer(
-        // 👈 BOTTOM NAVBAR NÃO CLICÁVEL
-        child: BottomNavbar(
-          indexAtivo: 1, // Compartilhar é a aba 1
-          onTap: (index) {
-            // Esta função não será chamada devido ao IgnorePointer
-          },
-        ),
       ),
     );
   }

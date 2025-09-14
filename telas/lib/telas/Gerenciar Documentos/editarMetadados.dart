@@ -257,12 +257,7 @@ class _EditarMetadadosState extends State<EditarMetadados> {
               ),
             ),
           ),
-          IgnorePointer(
-            child: Opacity(
-              opacity: 0.6,
-              child: const BottomNavbar(indexAtivo: 0),
-            ),
-          ),
+          
         ],
       ),
     );

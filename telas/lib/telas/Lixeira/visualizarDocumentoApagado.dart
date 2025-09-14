@@ -320,15 +320,7 @@ class _VisualizarDocumentoApagadoState
               ),
             ),
           ),
-          IgnorePointer(
-            // 👈 BOTTOM NAVBAR NÃO CLICÁVEL
-            child: BottomNavbar(
-              indexAtivo: abaAtiva,
-              onTap: (index) {
-                // Esta função não será chamada devido ao IgnorePointer
-              },
-            ),
-          ),
+         
         ],
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../widgets/navbar.dart';
-import '../../widgets/bottom_navbar.dart';
 import 'editarMetadados.dart';
 
 class VisualizarDocumento extends StatefulWidget {
@@ -239,13 +238,13 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.all(20),
-          child: _buildDialogoExclusao(),
+          child: _buildDialogoExclusao(context),
         );
       },
     );
   }
 
-  Widget _buildDialogoExclusao() {
+  Widget _buildDialogoExclusao(BuildContext dialogContext) {
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
       child: Container(
@@ -345,7 +344,7 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                   Container(
                     height: 48,
                     child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => Navigator.of(dialogContext).pop(), // Fecha o diálogo
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
@@ -374,7 +373,7 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // Fecha o diálogo
+                        Navigator.of(dialogContext).pop(); // Fecha o diálogo
                         _mostrarSnackBarExcluido();
                         
                         // Aguarda a SnackBar aparecer antes de voltar
@@ -572,17 +571,11 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                   ),
                 ),
               ),
-              IgnorePointer(
-                child: Opacity(
-                  opacity: 0.6,
-                  child: const BottomNavbar(indexAtivo: 0),
-                ),
-              ),
             ],
           ),
 
           Positioned(
-            bottom: 80,
+            bottom: 0,
             left: 0,
             right: 0,
             child: Column(
@@ -687,7 +680,7 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                       width: double.infinity,
                       height: 40,
                       decoration: const BoxDecoration(
-                        color: const Color(0xFFEFF4F6),
+                        color: Color(0xFFEFF4F6),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(28),
                           topRight: Radius.circular(28),
@@ -698,7 +691,7 @@ class _VisualizarDocumentoState extends State<VisualizarDocumento> with SingleTi
                           width: 32,
                           height: 4,
                           decoration: ShapeDecoration(
-                            color: const Color(0xFF70797B),
+                            color: Color(0xFF70797B),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(100),
                             ),

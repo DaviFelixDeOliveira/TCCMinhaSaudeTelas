@@ -11,12 +11,12 @@ class CodigosCompartilhamento extends StatefulWidget {
 }
 
 class _CodigosCompartilhamentoState extends State<CodigosCompartilhamento> 
-    with AutomaticKeepAliveClientMixin { // Adicione este mixin
+    with AutomaticKeepAliveClientMixin {
   
   @override
-  bool get wantKeepAlive => true; // Mantém o estado vivo
+  bool get wantKeepAlive => true;
 
-  final List<Map<String, dynamic>> codigos = []; // Agora esta lista persistirá
+  final List<Map<String, dynamic>> codigos = [];
   final Set<String> codigosExpandidos = {};
 
   void mostrarSnackbar(String mensagem) {
@@ -328,7 +328,7 @@ class _CodigosCompartilhamentoState extends State<CodigosCompartilhamento>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Importante: chame super.build
+    super.build(context);
     return Scaffold(
       body: Column(
         children: [
@@ -336,6 +336,7 @@ class _CodigosCompartilhamentoState extends State<CodigosCompartilhamento>
             mostrarIconeVoltar: false,
             mostrarImagem: true,
             tipoIconeDireito: NavbarIcon.nenhum,
+            titulo: 'Compartilhamento',
           ),
           Expanded(
             child: Padding(
@@ -454,7 +455,7 @@ class VisualizarCodigo extends StatelessWidget {
             mostrarIconeVoltar: true,
             titulo: codigo['codigo'],
             tipoIconeDireito: NavbarIcon.nenhum,
-            mostrarImagem: false,
+            mostrarImagem: true,
           ),
           const SizedBox(height: 16),
           Expanded(
