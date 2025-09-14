@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'telas/Configurações/verDadosPessoais.dart';
 
 import 'telas/Listar Arquivos/listarArquivos.dart';
 import 'telas/Compartilhamento/codigosCompartilhamento.dart';
@@ -28,7 +29,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// GoRouter com ShellRoute para manter a BottomNavbar
 final _router = GoRouter(
   initialLocation: '/',
   routes: [
@@ -75,19 +75,17 @@ final _router = GoRouter(
           builder: (context, state) =>
               const ListarDocumentosApagados(documentos: []),
         ),
-        GoRoute(
-          path: '/configuracoes',
-          name: 'configuracoes',
-          builder: (context, state) => const Scaffold(
-            body: Center(child: Text('Tela de Configurações')),
+                  GoRoute(
+            path: '/configuracoes',
+            name: 'configuracoes',
+            builder: (context, state) => const TelaConfiguracoes(),
           ),
-        ),
+
       ],
     ),
   ],
 );
 
-/// Função auxiliar para ativar o índice correto da navbar
 int _getIndex(GoRouterState state) {
   final location = state.uri.toString(); // substitui state.location
   if (location.startsWith('/compartilhar')) return 1;

@@ -117,7 +117,6 @@ class _ListarArquivosState extends State<ListarArquivos> {
     },
   ];
 
-  /// ✅ Navegação com `context.go()` para manter o ShellRoute
   void _navegarParaTela(int index) {
     if (index == 0) return;
 
